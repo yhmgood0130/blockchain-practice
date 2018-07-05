@@ -7,16 +7,28 @@ class Block {
 		this.previousHash = previousHash;
 		this.data = data;
 		this.hash = this.calculateHash();
+		this.nounce = 0;
 	}
 
 	calculateHash() {
-		return SHA256(this.index + this.previousHash + this.timestamp + JSON.stringify(this.data)).toString();
+		return SHA256(this.index + this.previousHash + this.timestamp + JSON.stringify(this.data) + this.nounce).toString();
+	}
+
+
+	mineBlock(difficulty){
+		while(this.hash.substring(0, difficulty) !== Array(difficulty + 1).join("0")) {
+			this.nounce++;
+			this.hash = this.calculateHash();
+		}
+
+		console.log("Block mined: " + this.hash);
 	}
 }
 
 class BlockChain {
 	constructor() {
 		this.chain = [this.createGenesisBlock()];
+		this.difficulty = 4;
 	}
 
 	createGenesisBlock(){
@@ -29,7 +41,7 @@ class BlockChain {
 
 	addBlock(newBlock) {
 		newBlock.previousHash = this.getLatestBlock().hash;
-		newBlock.hash = newBlock.calculateHash();
+		newBlock.mineBlock(this.difficulty);
 		this.chain.push(newBlock);
 	}
 
@@ -52,13 +64,18 @@ class BlockChain {
 }
 
 let moeCoin = new BlockChain();
+
+console.log("Mining block 1...");
+
 moeCoin.addBlock(new Block(1, "07/01/2018", { amount: 13}))
+
+console.log("Mining block 2...");
 moeCoin.addBlock(new Block(1, "07/04/2018", { amount: 26}));;
 
-console.log("Is blockchain valid? " + moeCoin.isChainValid());
+// console.log("Is blockchain valid? " + moeCoin.isChainValid());
 
-moeCoin.chain[1].data = { amount: 619 };
+// moeCoin.chain[1].data = { amount: 619 };
 
-console.log("Is blockchain valid? " + moeCoin.isChainValid());
+// console.log("Is blockchain valid? " + moeCoin.isChainValid());
 
 // console.log(JSON.stringify(moeCoin, null, 4));
